@@ -61,3 +61,71 @@ function mapCSVtoTable(csvcontent){
     }
     return html;
 }
+
+document.getElementById("fetch-button").onclick = getContent
+
+function mapJSONtoTable(jsoncontent){
+    let html='';
+    html += '<thead>';
+    let data = jsoncontent;
+    for(field of Object.keys(data[0])){
+        html += `<th>${field}</th>`;
+        tableHeaders.push(field);
+    }
+    html += '</thead><tbody><tr>';
+
+    for(idx in data){
+        let item = data[idx];
+        table.push([]);
+        let allfields = Object.keys(item);
+        for(field of allfields){
+            html += `<td>${item[field]}</td>`;
+            table[idx].push(item[field])
+        }
+        html += '</tr><tr>';
+    }
+    html += '</tr></tbody>';
+    return html;
+}
+
+function getContent() {
+    let mockarooApiKey = '2425d170';
+    let url = `https://cors-anywhere.herokuapp.com/http://my.api.mockaroo.com/users.json?key=`+mockarooApiKey;
+    let target = document.getElementById('visualization-area');
+    $.ajax( {
+        url: url,
+        responseType:'application/json',
+        success: function(data) {
+            console.log(data)
+            target.removeAttribute("hidden");
+            target.querySelector("#content").innerHTML = mapJSONtoTable(data);
+            target.querySelector("#success-msg").innerText = "Información obtenida exitosamente"
+            target.querySelector("#row-count").innerText = `Total: ${table.length} filas`
+        
+        }, 
+        error: function(xhr, status, error) {
+            console.log("error" + error)
+            console.log(xhr)
+            console.log(status)        
+            target.querySelector("#success-msg").innerText = `Hubo un error al leer el archivo:\n${error}`
+        }
+    });
+    //return fetch(`http://my.api.mockaroo.com/users.json?key=`+mockarooApiKey).then(response=>response.json()).catch(err=>{console.log(err)});
+}
+
+function callback(data){
+    
+}
+
+function placeFetchContent(){
+    let target = document.getElementById('visualization-area');
+    target.removeAttribute("hidden");
+	getContent().then(content => {
+        target.querySelector("#content").innerHTML = mapJSONtoTable(content);
+        target.querySelector("#success-msg").innerText = "Información obtenida exitosamente"
+        target.querySelector("#row-count").innerText = `Total: ${table.length} filas`
+    }).catch(error => {
+        console.log(error)
+        target.querySelector("#success-msg").innerText = `Hubo un error al leer el archivo:\n${error}`
+    })
+}
